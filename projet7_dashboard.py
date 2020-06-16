@@ -32,7 +32,7 @@ available_indicators=fi["feature"]
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = JupyterDash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # Create server variable with Flask server object for use with gunicorn
 server = app.server
