@@ -7,7 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/12wiy5RZvOFIy9wOEtBlwSmRRNFh1VuYi
 """
 
-from jupyter_dash import JupyterDash
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
