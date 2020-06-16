@@ -37,6 +37,22 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # Create server variable with Flask server object for use with gunicorn
 server = app.server
 
+y_value=int(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX'])
+y_target=int(df[df['SK_ID_CURR'] == 115304]['TARGET_adj'])
+y_min=df['INSTAL_PAYMENT_PERC_MAX'].min()
+y_max=df['INSTAL_PAYMENT_PERC_MAX'].max()
+figure_curves=ff.create_distplot([df[df['TARGET_adj'] == 0]['INSTAL_PAYMENT_PERC_MAX'],df[df['TARGET_adj'] == 1]['INSTAL_PAYMENT_PERC_MAX']],['Score=0','Score=1'], show_hist=False,show_rug=False)
+figure_curves.add_trace(
+        go.Scatter(
+            x=[float(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX']),float(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX'])],
+            y=[figure_curves['data'][y_target]['y'].min(),figure_curves['data'][y_target]['y'].max()],
+            mode="lines",
+            line=go.scatter.Line(color="gray"),
+            name='Client',
+            showlegend=True
+        )
+    )
+
 app.layout = html.Div([
     html.Div([
         html.Div([
