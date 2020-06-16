@@ -101,8 +101,7 @@ app.layout = html.Div([
         ],className="six columns"),
         html.Div([
             dcc.Graph(
-                id='graph_three_curves',
-                figure=figure_curves       
+                id='graph_three_curves', 
             )
          ],className="six columns"),
     ],className="row"),
