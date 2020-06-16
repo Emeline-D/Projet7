@@ -30,13 +30,6 @@ fi=fi.sort_values(by="importance", ascending=False)
 print (fi)
 available_indicators=fi["feature"]
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
-# Create server variable with Flask server object for use with gunicorn
-server = app.server
-
 y_value=int(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX'])
 y_target=int(df[df['SK_ID_CURR'] == 115304]['TARGET_adj'])
 y_min=df['INSTAL_PAYMENT_PERC_MAX'].min()
@@ -52,6 +45,13 @@ figure_curves.add_trace(
             showlegend=True
         )
     )
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+# Create server variable with Flask server object for use with gunicorn
+server = app.server
 
 
 app.layout = html.Div([
