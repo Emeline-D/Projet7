@@ -239,4 +239,5 @@ def update_trace(xaxis_column_name,clickData):
         y=[figure_curves['data'][y_target]['y'].min(),figure_curves['data'][y_target]['y'].max()],
         selector=dict(mode="lines"),overwrite=True)
 
-app.run_server()
+if __name__ == '__main__':
+    app.run_server()
