@@ -1,1 +1,1 @@
-web: gunicorn projet7_dashboard:app.server
+web: gunicorn projet7_dashboard:app
