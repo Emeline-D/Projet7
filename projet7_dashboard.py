@@ -1,4 +1,11 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
 # -*- coding: utf-8 -*-
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -10,34 +17,76 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import plotly.figure_factory as ff
 import numpy as np
+import pickle
+import lightgbm
+from sklearn.preprocessing import StandardScaler
+
+
+# In[2]:
+
 
 df = pd.read_csv('data_model_dashboard.csv', sep='\t')
 print (df.columns)
 
-clients = df["SK_ID_CURR"]
-threshold = 0.14
+list_clients=df['SK_ID_CURR']
+
+
+# In[3]:
+
+
+threshold=0.1
+
+with open('model', 'rb') as file:
+    pickle_model = pickle.load(file)
+    
+
+
+# In[4]:
+
 
 fi = pd.read_csv('feature_importance.csv', sep='\t')
 fi = fi.sort_values(by="importance", ascending=False)
 print (fi)
 available_indicators = fi["feature"]
 
+
+# In[5]:
+
+
+def adjusted_classes(y_scores, t):
+    return [1 if y >= t else 0 for y in y_scores]
+
+clients=df
+clients=clients.drop(['TARGET', 'SK_ID_CURR', 'index','TARGET_adj'], axis=1)
+std_scale = StandardScaler().fit(clients)
+clients_scaled = std_scale.transform(clients)
+score=pickle_model.predict_proba(clients_scaled)
+score=score[:, 1]
+df['TARGET_adj']=adjusted_classes(score,threshold)
+print (df['TARGET_adj'])
+
+print (df[df['TARGET_adj']==1][['SK_ID_CURR','TARGET_adj']])
+
+
+# In[6]:
+
+
 y_value = int(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX'])
 y_target = int(df[df['SK_ID_CURR'] == 115304]['TARGET_adj'])
-y_min = df['INSTAL_PAYMENT_PERC_MAX'].min()
-y_max = df['INSTAL_PAYMENT_PERC_MAX'].max()
+y_min = df['YEARS_BUILD_MODE'].min()
+y_max = df['YEARS_BUILD_MODE'].max()
 figure_curves = ff.create_distplot([df[df['TARGET_adj'] == 0][
-    'INSTAL_PAYMENT_PERC_MAX'],
+    'YEARS_BUILD_MODE'],
                                   df[df['TARGET_adj'] == 1][
-                                      'INSTAL_PAYMENT_PERC_MAX']],
+                                      'YEARS_BUILD_MODE']],
                                   ['Score=0', 'Score=1'],
                                   show_hist=False,
                                   show_rug=False)
 figure_curves.add_trace(
         go.Scatter(
             x=[float(df[df['SK_ID_CURR'] == 115304][
-                'INSTAL_PAYMENT_PERC_MAX']),
-               float(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX'])
+                'YEARS_BUILD_MODE']),
+               float(df[df['SK_ID_CURR'] == 115304]['YEARS_BUILD_MODE'])
                ],
             y=[figure_curves['data'][y_target]['y'].min(),
                figure_curves['data'][y_target]['y'].max()],
@@ -47,6 +96,10 @@ figure_curves.add_trace(
             showlegend=True
         )
     )
+
+
+# In[7]:
+
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -61,7 +114,7 @@ app.layout = html.Div([
         html.Div([
             dcc.Dropdown(
                 id='crossfilter-xaxis-column',
-                options=[{'label': i, 'value': i} for i in clients],
+                options=[{'label': i, 'value': i} for i in list_clients],
                 value=115304,
                 style={
                     'borderBottom': 'thin lightgrey solid',
@@ -76,7 +129,7 @@ app.layout = html.Div([
                 id='crossfilter-var-column',
                 options=[{'label': i, 'value': i}
                          for i in available_indicators],
-                value='INSTAL_PAYMENT_PERC_MAX',
+                value='YEARS_BUILD_MODE',
                 style={
                        'borderBottom': 'thin lightgrey solid',
                        'backgroundColor': 'rgb(250, 250, 250)',
@@ -124,7 +177,6 @@ app.layout = html.Div([
         html.Div([
             dcc.Graph(
                 id='graph_three_curves',
-                figure=figure_curves
             )
          ], className="six columns"),
     ], className="row"),
@@ -134,7 +186,7 @@ app.layout = html.Div([
                 id='crossfilter-var1-column',
                 options=[{'label': i, 'value': i}
                          for i in available_indicators],
-                value='INSTAL_PAYMENT_PERC_MAX'
+                value='YEARS_BUILD_MODE'
             )
         ], className="six columns"),
         html.Div([
@@ -142,7 +194,7 @@ app.layout = html.Div([
                 id='crossfilter-var2-column',
                 options=[{'label': i, 'value': i}
                          for i in available_indicators],
-                value='INSTAL_PAYMENT_PERC_MAX'
+                value='YEARS_BUILD_MODE'
             )
         ], className="six columns")
     ], className="row"),
@@ -187,13 +239,16 @@ app.layout = html.Div([
 @app.callback(dash.dependencies.Output('textarea-example', 'value'),
               [dash.dependencies.Input('crossfilter-xaxis-column', 'value')])
 def update_output(value):
-    score = (df.loc[df["SK_ID_CURR"] == int(value), 'TARGET_adj']).values
-    text = ""
-    if score == 0:
+    score=df.loc[df['SK_ID_CURR'] == value, 'TARGET_adj'].values[0]
+    text=""
+    if score == 0 :
         text = "Crédit accepté"
-    elif score == 1:
+    elif score ==1 :
         text = "Crédit refusé"
-    return ('Score = {}\n{}'.format(score[0], text))
+    
+    return ('Score = {}\n{}'.format(score, text))
+   
+    
 
 
 @app.callback(
@@ -283,5 +338,16 @@ def update_trace(xaxis_column_name, clickData):
            figure_curves['data'][y_target]['y'].max()],
         selector=dict(mode="lines"), overwrite=True)
 
+
+# In[ ]:
+
+
 if __name__ == '__main__':
     app.run_server()
+
+
+# In[ ]:
+
+
+
+
