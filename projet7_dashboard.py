@@ -21,27 +21,21 @@ import pickle
 import lightgbm
 from sklearn.preprocessing import StandardScaler
 
-
-# In[2]:
-
+# Ouverture du fichier des data
 
 df = pd.read_csv('data_model_dashboard.csv', sep='\t')
 print (df.columns)
 
 list_clients=df['SK_ID_CURR']
 
-
-# In[3]:
-
+# Ouverture et préparation du modèle de machine learning
 
 threshold=0.1
 
 with open('model', 'rb') as file:
     pickle_model = pickle.load(file)
-    
 
-
-# In[4]:
+# Ouverture du fichier de feature importance
 
 
 fi = pd.read_csv('feature_importance.csv', sep='\t')
@@ -50,7 +44,7 @@ print (fi)
 available_indicators = fi["feature"]
 
 
-# In[5]:
+# Prédiction avec le modèle
 
 
 def adjusted_classes(y_scores, t):
@@ -68,7 +62,7 @@ print (df['TARGET_adj'])
 print (df[df['TARGET_adj']==1][['SK_ID_CURR','TARGET_adj']])
 
 
-# In[6]:
+# Préparation du graphique des deux courbes et trait du client
 
 
 y_value = int(df[df['SK_ID_CURR'] == 115304]['INSTAL_PAYMENT_PERC_MAX'])
@@ -98,7 +92,7 @@ figure_curves.add_trace(
     )
 
 
-# In[7]:
+# Création du dashboard
 
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
